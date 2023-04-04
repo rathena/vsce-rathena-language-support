@@ -17,7 +17,7 @@ The following are code snippets provided by rAthena Language Support.
 
 ## Installation
 
-You can install the extension directly from Visual Studio Code's extension menu.
+You can install the extension directly from Visual Studio Code's extension menu or by visiting the [Marketplace](https://marketplace.visualstudio.com/items?itemName=rAthena.rathena-language-support).
 
 ## Contributing
 

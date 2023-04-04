@@ -1,14 +1,14 @@
-# Visual Studio Code Athena language support
+# Visual Studio Code rAthena Language Support
 
-This extension provides rAthena-flavored Athena language syntax highlighting and code snippets.
+This extension provides rAthena Scripting Language syntax highlighting and code snippets.
 
 ## File extension support
 
-Athena Language Support automatically highlights files with .rascript extension.
+rAthena Language Support automatically highlights files with .rascript extension.
 
 ## Snippets
 
-The following are code snippets provided by Athena Language Support.
+The following are code snippets provided by rAthena Language Support.
 
 * `defnpc`, `defnpcfloat`, `defwarp`, and `defshop` (In-game objects definition)
 * `deffunction` (Function definition)
@@ -17,8 +17,7 @@ The following are code snippets provided by Athena Language Support.
 
 ## Installation
 
-Visit [the extension's page](https://marketplace.visualstudio.com/items?itemName=secretdataz.athena-language-support) in Visual Studio Marketplace.
-You can also install the extension directly from Visual Studio Code's extension menu.
+You can install the extension directly from Visual Studio Code's extension menu.
 
 ## Contributing
 
@@ -30,4 +29,4 @@ This extension is licensed under the MIT license.
 
 ## Special thanks
 
-This extension was initially ported from [JoWei's language-athena](https://github.com/JoWei/language-athena) for Atom editor.
+This extension was initially ported from [JoWei's language-athena](https://github.com/JoWei/language-athena) for Atom editor and published via VS Marketplace by secretdataz, a member of the rAthena Dev Team. The [repository](https://github.com/secretdataz/athena-language-support) was then archived and is no longer maintained. This extension is now maintained by the rAthena Dev Team.

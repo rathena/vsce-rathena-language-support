@@ -1,27 +1,31 @@
 {
-    "name": "athena-language-support",
-    "displayName": "Athena Language Support",
-    "description": "Adds syntax highlighting and code snippets for rAthena-flavoured Athena scripting language",
-    "publisher": "secretdataz",
+    "name": "rathena-language-support",
+    "displayName": "rAthena Language Support",
+    "description": "Adds syntax highlighting and code snippets for the rAthena Scripting Language",
+    "publisher": "rAthena",
     "repository": {
         "type": "git",
-        "url": "https://github.com/secretdataz/athena-language-support"
+        "url": "https://github.com/rathena/vsce-rathena-language-support"
     },
     "author": {
-        "name": "Jittapan Pleumsumran"
+        "name": "rAthena Dev Team"
     },
     "contributors": [
         {
             "name": "JoWei",
             "url": "https://github.com/JoWei"
-        }
+        },
+		{
+			"name": "Jittapan Pleumsumran",
+			"url": "https://github.com/secretdataz/athena-language-support"
+		}
     ],
     "license": "MIT",
     "private": false,
     "bugs": {
-        "url": "https://github.com/secretdataz/athena-language-support"
+        "url": "https://github.com/rathena/vsce-rathena-language-support/issues"
     },
-    "version": "1.0.3",
+    "version": "1.0.5",
     "engines": {
         "vscode": "^1.33.0"
     },
@@ -31,19 +35,19 @@
     ],
     "contributes": {
         "languages": [{
-            "id": "athena",
-            "aliases": ["Athena", "athena"],
+            "id": "rathena",
+            "aliases": ["rAthena", "rathena"],
             "extensions": [".rascript"],
             "configuration": "./language-configuration.json"
         }],
         "grammars": [{
-            "language": "athena",
-            "scopeName": "source.athena",
-            "path": "./syntaxes/athena.json"
+            "language": "rathena",
+            "scopeName": "source.rathena",
+            "path": "./syntaxes/rathena.json"
         }],
         "snippets": [{
-            "language": "athena",
-            "path": "./snippets/athena.json"
+            "language": "rathena",
+            "path": "./snippets/rathena.json"
         }]
     }
 }

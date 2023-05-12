@@ -5,6 +5,7 @@ This extension provides rAthena Scripting Language syntax highlighting and code 
 ## File extension support
 
 rAthena Language Support automatically highlights files with .rascript extension.
+Files that start with `//===== rAthena Script` or `//!rathena` will also be automatically detected as an rAthena script.
 
 ## Snippets
 

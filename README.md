@@ -1,3 +1,6 @@
+[![GitHub last commit](https://img.shields.io/github/last-commit/rathena/vsce-rathena-language-support?label=updated&style=for-the-badge)](https://github.com/rathena/vsce-rathena-language-support/commits/master) 
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/rathena/vsce-rathena-language-support?label=Open%20PR&style=for-the-badge)
+
 # Visual Studio Code rAthena Language Support
 
 This extension provides rAthena Scripting Language syntax highlighting and code snippets.

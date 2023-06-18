@@ -3,6 +3,7 @@
     "displayName": "rAthena Language Support",
     "description": "Adds syntax highlighting and code snippets for the rAthena Scripting Language",
     "publisher": "rAthena",
+    "icon": "rathena-icon.png",
     "repository": {
         "type": "git",
         "url": "https://github.com/rathena/vsce-rathena-language-support"
@@ -35,7 +36,7 @@
     ],
     "activationEvents": [
         "onStartupFinished"
-      ],
+    ],
     "main": "./out/extension",
     "contributes": {
         "languages": [

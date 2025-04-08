@@ -1,6 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode'
+import { ColorInformation, Color } from 'vscode'
 
 // Map to store COLOR decoration types by hex color
 const colorDecorationTypes = new Map<string, vscode.TextEditorDecorationType>()
@@ -65,9 +66,15 @@ function areRangeArraysEqual (arr1: vscode.Range[], arr2: vscode.Range[]): boole
   return true
 }
 
+// Get configuration settings
+function getConfiguration<T> (setting: string): T {
+  const value = vscode.workspace.getConfiguration('rathena').get<T>(setting)
+  return value === undefined ? false as T : value
+}
+
 // --- Modify updateDecorations ---
 function updateDecorations (editor: vscode.TextEditor | undefined): void {
-  // If editor is undefined, null, or not a rathena file, clear decorations and info
+  // If editor is invalid or not a rathena file, clear decorations
   if (editor === undefined || editor === null || editor.document.languageId !== 'rathena') {
     const docUriString = editor?.document?.uri?.toString()
     if (docUriString !== undefined) {
@@ -80,6 +87,17 @@ function updateDecorations (editor: vscode.TextEditor | undefined): void {
     }
     // Reset visible ranges if the editor is invalid or not rathena
     visibleCodeRanges = [] // Use empty array
+    return
+  }
+
+  // Get configuration settings
+  const renderColors = getConfiguration<boolean>('renderColors')
+  const hideColorCodes = getConfiguration<boolean>('hideColorCodes') && renderColors // Only hide if both are true
+
+  // If color rendering is disabled, clear decorations and exit
+  if (!renderColors) {
+    editor.setDecorations(hiddenCodeDecorationType, [])
+    colorDecorationTypes.forEach(type => { editor.setDecorations(type, []) })
     return
   }
 
@@ -119,26 +137,26 @@ function updateDecorations (editor: vscode.TextEditor | undefined): void {
     const isCurrentCodeReset = hexColor === '000000' // Is the code we just matched ^000000?
     const isVisible = visibleCodeRanges.some(visibleRange => visibleRange.isEqual(codeRange)) // Is it explicitly visible due to cursor?
 
-    // --- *** REVISED HIDING LOGIC *** ---
+    // --- *** HIDING LOGIC *** ---
     let shouldHide = false
-    if (!isVisible) { // Only hide if not explicitly made visible by cursor
-      if (!isCurrentCodeReset) {
-        // Always hide non-reset codes by default
-        shouldHide = true
-      } else {
-        // For reset codes (^000000), hide *only* if the color active *before* it was NOT the default.
-        // This means it's closing a colored section.
-        if (currentColorHex !== '000000') {
+    if (hideColorCodes) { // Only hide if the setting is enabled
+      if (!isVisible) { // Only hide if not explicitly visible
+        if (!isCurrentCodeReset) {
+          // Always hide non-reset codes by default
           shouldHide = true
+        } else {
+          // For reset codes (^000000), only hide if they're closing a color
+          if (currentColorHex !== '000000') {
+            shouldHide = true
+          }
         }
-        // If currentColorHex was '000000', this ^000000 is orphaned or redundant, so don't hide it.
       }
     }
 
     if (shouldHide) {
       hiddenCodeOptions.push({ range: codeRange })
     }
-    // --- *** END REVISED HIDING LOGIC *** ---
+    // --- *** END HIDING LOGIC *** ---
 
     // 3. Store info for this code, affecting the text that FOLLOWS
     // Initially, the textRange is empty; it will be updated in the next iteration or at the end
@@ -201,7 +219,23 @@ export function triggerUpdateDecorations (editor: vscode.TextEditor | undefined,
   }
 }
 
-// Function to set up listeners and initial state for decorations
+// Add this new function to convert hex to Color object
+function hexToColor (hex: string): Color {
+  const r = parseInt(hex.slice(0, 2), 16) / 255
+  const g = parseInt(hex.slice(2, 4), 16) / 255
+  const b = parseInt(hex.slice(4, 6), 16) / 255
+  return new Color(r, g, b, 1)
+}
+
+// Add this new function to convert Color to hex
+function colorToHex (color: Color): string {
+  const r = Math.round(color.red * 255).toString(16).padStart(2, '0')
+  const g = Math.round(color.green * 255).toString(16).padStart(2, '0')
+  const b = Math.round(color.blue * 255).toString(16).padStart(2, '0')
+  return r + g + b
+}
+
+// Modify initializeDecorations to register the color provider
 export function initializeDecorations (context: vscode.ExtensionContext): void {
   let activeEditor = vscode.window.activeTextEditor
 
@@ -252,7 +286,7 @@ export function initializeDecorations (context: vscode.ExtensionContext): void {
       const colorInfos = documentColorInfos.get(docUriString)
       let nextVisibleRanges: vscode.Range[] = []
 
-      if (colorInfos !== undefined) {
+      if (colorInfos !== undefined && colorInfos !== null) {
         let foundMatch = false
         // Iterate through stored color segments
         for (let i = 0; i < colorInfos.length; i++) {
@@ -313,6 +347,53 @@ export function initializeDecorations (context: vscode.ExtensionContext): void {
     }
   }))
 
+  // Register the color provider
+  context.subscriptions.push(
+    vscode.languages.registerColorProvider('rathena', {
+      provideDocumentColors(document: vscode.TextDocument): vscode.ColorInformation[] {
+        // Check if color picker is enabled (independent of render colors)
+        const showColorPicker = getConfiguration<boolean>('showColorPicker')
+        if (!showColorPicker) return []
+
+        const text = document.getText()
+        const colors: ColorInformation[] = []
+        let match
+        let previousColor = '000000' // Mantener track del color anterior
+
+        // Get the stored color infos for this document
+        const docUriString = document.uri.toString()
+        const colorInfos = documentColorInfos.get(docUriString)
+        if (colorInfos === undefined || colorInfos === null) return colors
+
+        while ((match = colorCodeRegex.exec(text)) !== null) {
+          const hexColor = match[1]
+          const startPos = document.positionAt(match.index)
+          const endPos = document.positionAt(match.index + 7)
+          const range = new vscode.Range(startPos, endPos)
+
+          // Only show color picker if:
+          // 1. It's a color code (^xxxxxx)
+          // 2. It's NOT a reset code (^000000) closing a previous color
+          const isColorCode = colorInfos.some(info => info.codeRange.contains(range))
+          const isClosingReset = hexColor === '000000' && previousColor !== '000000'
+
+          if (isColorCode && !isClosingReset) {
+            colors.push(new ColorInformation(range, hexToColor(hexColor)))
+          }
+
+          previousColor = hexColor
+        }
+
+        return colors
+      },
+
+      provideColorPresentations(color: Color, context: { document: vscode.TextDocument, range: vscode.Range }): vscode.ColorPresentation[] {
+        const hex = colorToHex(color)
+        return [new vscode.ColorPresentation('^' + hex)]
+      }
+    })
+  )
+
   // Add disposables for cleanup on extension deactivation
   context.subscriptions.push({
     dispose: () => {
@@ -324,6 +405,21 @@ export function initializeDecorations (context: vscode.ExtensionContext): void {
       visibleCodeRanges = []
     }
   })
+
+  // Add configuration change listener
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(event => {
+      if (event.affectsConfiguration('rathena.renderColors') ||
+          event.affectsConfiguration('rathena.hideColorCodes')) {
+        // Update all active windows
+        vscode.window.visibleTextEditors.forEach(editor => {
+          if (editor.document.languageId === 'rathena') {
+            triggerUpdateDecorations(editor, true)
+          }
+        })
+      }
+    })
+  )
 
   console.log('Rathena color decoration support initialized.')
 }

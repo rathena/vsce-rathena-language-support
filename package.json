@@ -56,6 +56,21 @@
                 "configuration": "./language-configuration.json"
             }
         ],
+        "commands": [
+            {
+                "command": "rathena.wrapWithColorCodes",
+                "title": "Wrap in Color Codes"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "when": "editorHasSelection && editorLangId == rathena",
+                    "command": "rathena.wrapWithColorCodes",
+                    "group": "1_modification"
+                }
+            ]
+        },
         "grammars": [
             {
                 "language": "rathena",

@@ -246,38 +246,42 @@ export function initializeDecorations (context: vscode.ExtensionContext): void {
   // Update decorations when the text editor selection changes
   context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection((event: vscode.TextEditorSelectionChangeEvent) => {
     const editor = event.textEditor
-    // Check if the change is in the active editor and it's a rathena file
     if (editor === vscode.window.activeTextEditor && editor.document.languageId === 'rathena') {
-      const position = editor.selection.active // Current cursor position
+      const position = editor.selection.active
       const docUriString = editor.document.uri.toString()
       const colorInfos = documentColorInfos.get(docUriString)
-      let nextVisibleRanges: vscode.Range[] = [] // Ranges to make visible
+      let nextVisibleRanges: vscode.Range[] = []
 
       if (colorInfos !== undefined) {
         let foundMatch = false
         // Iterate through stored color segments
         for (let i = 0; i < colorInfos.length; i++) {
           const info = colorInfos[i]
-          // Check if cursor is within the text range of this color segment (and it's not ^000000 reset)
-          // This range starts *after* info.codeRange and ends *before* the next code (or EOF)
-          if (info.colorHex !== '000000' && !info.textRange.isEmpty && info.textRange.contains(position)) {
-            // Make the code that started this segment visible
-            nextVisibleRanges.push(info.codeRange)
-            // Also make the *next* code visible (if it exists) as it ends the current segment
-            // This next code *could* be ^000000
-            if (i + 1 < colorInfos.length) {
-              nextVisibleRanges.push(colorInfos[i + 1].codeRange)
+          if (info.colorHex !== '000000' && !info.textRange.isEmpty) {
+            const nextInfo = i + 1 < colorInfos.length ? colorInfos[i + 1] : null
+            const fullRange = nextInfo !== null
+              ? new vscode.Range(
+                info.codeRange.start,
+                nextInfo.codeRange.end
+              )
+              : new vscode.Range(
+                info.codeRange.start,
+                info.textRange.end
+              )
+            if (fullRange.contains(position)) {
+              nextVisibleRanges.push(info.codeRange)
+              if (nextInfo !== null) {
+                nextVisibleRanges.push(nextInfo.codeRange)
+              }
+              foundMatch = true
+              break
             }
-            foundMatch = true
-            break // Found the relevant segment
           }
         }
-        // Fallback: If the cursor is exactly on a currently visible code range, keep it visible
+
         if (!foundMatch) {
           for (const currentVisible of visibleCodeRanges) {
             if (currentVisible.contains(position)) {
-              // If cursor is on a code that *was* visible, keep the same set visible
-              // This prevents flickering when clicking directly on the code.
               nextVisibleRanges = [...visibleCodeRanges]
               foundMatch = true
               break
@@ -286,16 +290,13 @@ export function initializeDecorations (context: vscode.ExtensionContext): void {
         }
       }
 
-      // Only trigger an update if the set of visible ranges has changed
       if (!areRangeArraysEqual(visibleCodeRanges, nextVisibleRanges)) {
         visibleCodeRanges = nextVisibleRanges
-        triggerUpdateDecorations(editor, true) // Immediate update for visibility change
+        triggerUpdateDecorations(editor, true)
       }
     } else if (editor === vscode.window.activeTextEditor && visibleCodeRanges.length > 0) {
-      // If selection changes in the active editor but it's NOT rathena, clear visible ranges
       visibleCodeRanges = []
-      // Force an update to hide any previously visible codes if the language changed or file isn't rathena
-      triggerUpdateDecorations(editor, true) // Update needed to apply hiding
+      triggerUpdateDecorations(editor, true)
     }
   }))
 

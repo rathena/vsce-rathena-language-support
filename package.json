@@ -68,7 +68,31 @@
                 "language": "rathena",
                 "path": "./snippets/rathena.json"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "rAthena Script Syntax",
+            "properties": {
+                "rathena.renderColors": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Render color codes in text",
+                    "order": 1
+                },
+                "rathena.hideColorCodes": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Hide color codes (^xxxxxx) until selected. This option requires 'Render Colors' to be enabled.",
+                    "order": 2,
+                    "when": "config.rathena.renderColors"
+                },
+                "rathena.showColorPicker": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show color picker for color codes",
+                    "order": 3
+                }
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

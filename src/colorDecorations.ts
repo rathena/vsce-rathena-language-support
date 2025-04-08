@@ -350,7 +350,7 @@ export function initializeDecorations (context: vscode.ExtensionContext): void {
   // Register the color provider
   context.subscriptions.push(
     vscode.languages.registerColorProvider('rathena', {
-      provideDocumentColors(document: vscode.TextDocument): vscode.ColorInformation[] {
+      provideDocumentColors (document: vscode.TextDocument): vscode.ColorInformation[] {
         // Check if color picker is enabled (independent of render colors)
         const showColorPicker = getConfiguration<boolean>('showColorPicker')
         if (!showColorPicker) return []
@@ -387,7 +387,7 @@ export function initializeDecorations (context: vscode.ExtensionContext): void {
         return colors
       },
 
-      provideColorPresentations(color: Color, context: { document: vscode.TextDocument, range: vscode.Range }): vscode.ColorPresentation[] {
+      provideColorPresentations (color: Color, context: { document: vscode.TextDocument, range: vscode.Range }): vscode.ColorPresentation[] {
         const hex = colorToHex(color)
         return [new vscode.ColorPresentation('^' + hex)]
       }

@@ -20,6 +20,21 @@ The following are code snippets provided by rAthena Language Support.
 * `On:` event handler snippet
 * `for`, `while`, `do` flow control snippet
 
+## Color Code Features
+
+The extension provides enhanced support for script's color codes:
+
+* **Color Rendering**: Automatically renders color codes (^xxxxxx) in their respective colors
+* **Color Code Hiding**: Option to hide color codes until selected
+* **Color Picker**: Visual color picker for selecting and modifying color codes
+* **Quick Color Wrapping**: Right-click menu option to wrap selected text with color codes (default: ^ff0000)
+
+### Configuration Options
+
+* `rathena.renderColors`: Enable/disable color rendering (default: true)
+* `rathena.hideColorCodes`: Hide color codes until selected (default: true)
+* `rathena.showColorPicker`: Enable/disable color picker (default: true)
+
 ## Installation
 
 You can install the extension directly from Visual Studio Code's extension menu or by visiting the [Marketplace](https://marketplace.visualstudio.com/items?itemName=rAthena.rathena-language-support).
